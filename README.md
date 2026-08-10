@@ -139,6 +139,24 @@ If a request reaches the **CLOSED** status, the update form is automatically dis
 
 ---
 
+## Authentication & OIDC Provider Configuration
+
+The application is structured to support secure authentication via OpenID Connect (OIDC) / OAuth 2.0 protocols using standard Authorization Code Flow with PKCE:
+
+### 1. Provider Setup & Environment Variables
+
+To connect to OIDC Identity Provider (Auth0), configure the following environment variables in `.env.development`:
+
+```env
+OIDC_AUTHORITY=[https://your-identity-provider.com](https://your-identity-provider.com)
+OIDC_CLIENT_ID=your-client-id
+OIDC_REDIRECT_URI=http://localhost:5173/callback
+OIDC_POST_LOGOUT_REDIRECT_URI=http://localhost:5173
+OIDC_SCOPE="openid profile email"
+```
+
+---
+
 ## Testing Strategy
 
 The application adopts a pyramid testing strategy to ensure high reliability across unit, integration, and component levels:
