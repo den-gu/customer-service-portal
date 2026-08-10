@@ -24,5 +24,6 @@ export default defineConfig([
         { allowConstantExport: true },
       ],
     },
+    ignores: ["public/**", "dist/**", "node_modules/**"],
   },
 ])

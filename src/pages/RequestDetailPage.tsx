@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useServiceRequestDetail, useUpdateServiceRequestStatus } from '@/hooks/useServiceRequests';
 import { Badge } from '@/components/ui/badge';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Field, FieldError } from '@/components/ui/field';
@@ -49,7 +49,6 @@ const UpdateStatusSection: React.FC<UpdateStatusSectionProps> = ({
     handleSubmit,
     control,
     reset,
-    watch,
     formState: { errors },
   } = useForm<UpdateStatusFormValues>({
     resolver: zodResolver(updateStatusSchema),
@@ -59,7 +58,10 @@ const UpdateStatusSection: React.FC<UpdateStatusSectionProps> = ({
     },
   });
 
-  const noteValue = watch('note') || '';
+  const noteValue = useWatch({
+    control,
+    name: 'note',
+  }) || '';
 
   const onSubmit = (data: UpdateStatusFormValues) => {
     updateStatusMutation.mutate(
