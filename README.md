@@ -131,10 +131,10 @@ If a request reaches the **CLOSED** status, the update form is automatically dis
 2. **Install dependencies:**
    npm install
 
-3. **Build for production:**
+3. **Start the development server:**
    npm run dev
 
-4. **Install dependencies:**
+4. **Build for production:**
    npm run build
 
 ---
