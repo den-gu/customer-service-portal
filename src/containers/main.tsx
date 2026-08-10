@@ -8,8 +8,7 @@ interface MainProps {
 
 export default function Main({ children, initialExpanded }: MainProps) {
    
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isSidebarOpen, setIsSidebarOpen] = useState(initialExpanded);
+  const [isSidebarOpen] = useState(initialExpanded);
 
   // Lógica de navegação para o Chevron
   // const handleBack = () => {
