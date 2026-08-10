@@ -10,7 +10,47 @@ The application follows a clean Separation of Concerns through distinct architec
 
 1. **Presentation Layer (UI):** Built with React 18+, TypeScript, Tailwind CSS, and accessible UI components based on shadcn/ui and Base UI primitives.
 2. **Form State Management:** Complex form state is decoupled using React Hook Form paired with Zod for runtime schema validation.
-3. **Server State Management:** Asynchronous state, caching, cache invalidation, and mutation handling are managed via TanStack Query (React Query).
+3. **Server State Management & API Mocking:** Asynchronous state, caching, cache invalidation, and mutation handling are managed via TanStack Query (React Query), backed by Mock Service Worker (MSW) for seamless network-level REST API simulation.
+4. **API Client & Networking Layer:** API calls are structured using an Axios client instance, providing centralized request/response handling and unified error normalization.
+
+---
+
+## API Integration & Mocking Strategy
+
+### 1. Mock Service Worker (MSW)
+
+Rather than mocking API calls in memory or replacing global fetch methods, the application leverages **MSW** to intercept network requests at the Service Worker level:
+
+- **OAS3 Contract Fidelity:** MSW intercepts outgoing network traffic and matches OpenAPI 3.0 route paths (e.g., `/requests/{id}`, `/requests/{id}/status`).
+- **Realistic Network Simulation:** Simulates realistic network latencies, random/edge-case errors, and accurate status codes (`200 OK`, `404 Not Found`, `409 Conflict`).
+- **Seamless Transition to Production:** Switching from the mock layer to a live production backend requires zero code changes in application components—only updating the `API_BASE_URL` environment variable.
+
+### 2. Axios Client Configuration
+
+HTTP interactions are encapsulated within a dedicated Axios instance (`src/lib/apiClient.ts`):
+
+- **Base Configuration:** Centralizes host base URLs, default timeout thresholds, and required JSON headers.
+- **Error Normalization:** Axios interceptors capture network, validation, and HTTP error payloads, normalizing them into predictable domain exception objects before reaching the UI layer.
+
+---
+
+## Security Architecture & Best Practices
+
+Security is integrated at both the application and network communication layers:
+
+1. Input Validation & Injection Protection
+   - Runtime Schema Validation: All form payloads and API parameters are validated using Zod schemas before being dispatched to the server, preventing malformed inputs and data pollution.
+   - XSS Mitigation: React's automatic JSX escaping combined with strict input sanitization prevents Cross-Site Scripting (XSS) attacks.
+
+2. Authentication & Access Control
+   - Route Protection: Protected views require valid session credentials managed via OpenID Connect (OIDC) / OAuth2 authentication flows.
+   - Access Restriction Fallbacks: Unauthenticated users attempting to access restricted resources are intercepted and redirected to explicit authentication prompts.
+
+3. Concurrency & Data Integrity
+   - Version-Based Race Condition Prevention: Mutating request statuses requires passing the current client-side version token. If a concurrent modification occurs on the backend, the mutation is rejected with a 409 Conflict status code to prevent data corruption ("lost updates").
+
+4. Secrets & Environment Management
+   - Zero Credential Exposure: All sensitive API endpoints, client secrets, and third-party keys are isolated in environment variables (`.env.example` provided) and excluded from version control via `.gitignore`.
 
 ---
 
@@ -95,25 +135,5 @@ If a request reaches the **CLOSED** status, the update form is automatically dis
 
 4. **Install dependencies:**
    npm run build
-
----
-
-## Security Architecture & Best Practices
-
-Security is integrated at both the application and network communication layers:
-
-1. Input Validation & Injection Protection
-   - Runtime Schema Validation: All form payloads and API parameters are validated using Zod schemas before being dispatched to the server, preventing malformed inputs and data pollution.
-   - XSS Mitigation: React's automatic JSX escaping combined with strict input sanitization prevents Cross-Site Scripting (XSS) attacks.
-
-2. Authentication & Access Control
-   - Route Protection: Protected views require valid session credentials managed via OpenID Connect (OIDC) / OAuth2 authentication flows.
-   - Access Restriction Fallbacks: Unauthenticated users attempting to access restricted resources are intercepted and redirected to explicit authentication prompts.
-
-3. Concurrency & Data Integrity
-   - Version-Based Race Condition Prevention: Mutating request statuses requires passing the current client-side version token. If a concurrent modification occurs on the backend, the mutation is rejected with a 409 Conflict status code to prevent data corruption ("lost updates").
-
-4. Secrets & Environment Management
-   - Zero Credential Exposure: All sensitive API endpoints, client secrets, and third-party keys are isolated in environment variables (`.env.example` provided) and excluded from version control via `.gitignore`.
 
 ---
