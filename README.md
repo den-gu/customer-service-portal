@@ -106,7 +106,8 @@ If a request reaches the **CLOSED** status, the update form is automatically dis
 - **Styling & Motion:** Tailwind CSS, Framer Motion
 - **UI Components:** Base UI / shadcn/ui, Hugeicons React
 - **Forms & Validation:** React Hook Form, Zod, `@hookform/resolvers`
-- **Data Fetching:** TanStack React Query
+- **Networking & State:** Axios, MSW (Mock Service Worker), TanStack React Query
+- **Testing & CI/CD:** Vitest, React Testing Library, GitHub Actions
 
 ---
 
@@ -135,5 +136,62 @@ If a request reaches the **CLOSED** status, the update form is automatically dis
 
 4. **Install dependencies:**
    npm run build
+
+---
+
+## Testing Strategy
+
+The application adopts a pyramid testing strategy to ensure high reliability across unit, integration, and component levels:
+
+1. Component & Integration Testing (Vitest & React Testing Library)
+   - Verifies component rendering, user interactions, and state transitions in isolation.
+   - Tests mock server responses via MSW during integration flows to validate end-to-end data fetching and form mutations without calling real network endpoints.
+
+2. Static Analysis & Type Checking
+   - TypeScript Strict Mode: Enforces strict type compliance (`noImplicitAny`, `strictNullChecks`) across all source files.
+   - ESLint Analysis: Ensures code quality and enforces React Best Practices, Hooks rules, and React Refresh compliance.
+
+3. Executing Tests
+   - Run unit/integration tests: `npm run test`
+   - Run tests with coverage: `npm run coverage`
+   - Run static analysis: `npm run lint`
+
+---
+
+## CI/CD Pipeline: GitHub Actions Workflow Description
+
+Continuous Integration is powered by GitHub Actions through the `.github/workflows/build-and-test.yml` workflow. On every push or pull request to the `main` branch, the automated pipeline executes the following stages:
+
+1. Environment Provisioning: Spins up an `ubuntu-latest` runner configured with the Node.js 22 LTS runtime and caching enabled for package dependencies.
+2. Dependency Installation: Runs `npm ci` for fast, deterministic, and reproducible dependency resolution.
+3. Code Linting & Static Inspection: Executes `npm run lint` to enforce formatting, code style rules, and React/TypeScript best practices.
+4. Type Safety Verification: Invokes `npx tsc --noEmit` to validate complete TypeScript compilation without producing build artifacts.
+5. Unit & Integration Test Suite: Runs `npm run test` using Vitest to ensure all tests pass cleanly.
+6. Production Build Construction: Executes `npm run build` to verify that Vite bundles production assets without bundling errors or missing dependencies.
+
+---
+
+## Security & Accessibility Considerations
+
+### 1. Security Architecture
+
+- Input Sanitization & Injection Protection: All inputs undergo runtime schema validation via Zod, eliminating malicious payloads before they hit business logic.
+- Cross-Site Scripting (XSS) Mitigation: Relies on React's built-in JSX auto-escaping alongside strict input handling.
+- Optimistic Concurrency Protection: Uses version tokens in request updates to prevent race conditions and unintentional overwrites ("lost updates").
+- Zero Credential Exposure: Environment variables are strictly managed via `.env` files and excluded from Git version control.
+
+### 2. Accessibility (a11y)
+
+- Accessible UI Primitives: Components are built on top of Radix/Base UI primitives, ensuring native keyboard navigation support, focus management, and compliance with WAI-ARIA guidelines.
+- Screen Reader Support: Form fields, dialogs, and alert banners include explicit ARIA roles (`aria-live`, `aria-describedby`, `aria-invalid`) to inform screen readers of state updates and validation errors.
+- Color Contrast & Focus Indicators: Tailored with high-contrast color palettes and prominent focus rings (`focus-visible`) for enhanced visual navigation.
+
+---
+
+## Known Limitations
+
+- In-Memory MSW Persistence: Since MSW simulates API interactions client-side, state mutations (such as updating a request status) are persisted in browser memory. Refreshing the browser page resets the mock dataset to its initial state.
+- Real-Time Updates: The current implementation relies on on-demand queries and manual refetching rather than WebSockets or Server-Sent Events (SSE) for live multi-user streaming.
+- Single Role Access: The application does not currently feature granular role-based access control (RBAC) screens (e.g., distinguishing between end-user requesters and admin agents in the same interface).
 
 ---
